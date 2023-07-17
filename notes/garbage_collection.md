@@ -1,0 +1,1 @@
+- [A Unified Theory of Garbage Collection](https://web.eecs.umich.edu/~weimerw/2012-4610/reading/bacon-garbage.pdf).

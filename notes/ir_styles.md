@@ -1,0 +1,4 @@
+- [Control flow graph](https://en.wikipedia.org/wiki/Control-flow_graph).
+- [Static single-assignment](https://en.wikipedia.org/wiki/Static_single-assignment_form) is the opposite of [continuation-passing](https://en.wikipedia.org/wiki/Continuation-passing_style).
+- [Three-address code](https://en.wikipedia.org/wiki/Three-address_code).
+- To target GCC, you mainly target [gimple](https://gcc.gnu.org/onlinedocs/gccint/GIMPLE.html) or [RTL](https://gcc.gnu.org/onlinedocs/gccint/RTL.html).
