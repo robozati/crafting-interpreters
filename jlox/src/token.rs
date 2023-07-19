@@ -3,7 +3,7 @@ use std::fmt::Display;
 /// Bundled lexeme with information around it.
 pub struct Token<'a> {
     token_type: TokenType,
-    lexeme: &'a str,
+    pub lexeme: &'a str,
     line: usize,
 }
 

@@ -1,5 +1,6 @@
 mod lox;
 mod scanner;
+mod syntax;
 mod token;
 
 use std::cmp;
