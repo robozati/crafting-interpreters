@@ -1,4 +1,4 @@
-use crate::scanner::Scanner;
+use crate::{parser::parse, scanner, syntax::AstPrinter};
 use std::{
     fs,
     io::{self, Write},
@@ -9,7 +9,8 @@ use std::{
 #[derive(Debug)]
 pub enum LoxError {
     IoError(std::io::Error),
-    ScanningError,
+    Scanning,
+    Parsing,
 }
 
 /// Reads the file and executes it.
@@ -39,21 +40,24 @@ pub fn run_prompt() -> Result<(), LoxError> {
 }
 
 fn run(source: &str) -> Result<(), LoxError> {
-    let (tokens, had_error) = Scanner::scan_tokens(source);
+    let (tokens, had_error) = scanner::scan_tokens(source);
     if !had_error {
-        for token in tokens {
-            println!("{}", token);
-        }
-        return Ok(());
+        let expr = match parse(tokens) {
+            Some(val) => val,
+            None => return Err(LoxError::Parsing),
+        };
+        let printer = AstPrinter;
+        println!("{}", expr.accept(&printer));
     }
-    Err(LoxError::ScanningError)
+    Err(LoxError::Scanning)
 }
 
 impl std::fmt::Display for LoxError {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
             Self::IoError(e) => e.fmt(f),
-            Self::ScanningError => write!(f, "Could not execute due to an error while scanning."),
+            Self::Scanning => write!(f, "Could not execute due to an error while scanning."),
+            Self::Parsing => write!(f, "Could not execute due to an error while parsing."),
         }
     }
 }

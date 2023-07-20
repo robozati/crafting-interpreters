@@ -3,21 +3,21 @@ use crate::token::Token;
 /// Lox's expression grammar.
 /// The Expr needs to be boxed in certain values because Expr is an enum that references itself,
 /// and this can be recursive, so the size is not known at compile time.
-pub enum Expr<'a> {
+pub enum Expr {
     Literal {
         value: LiteralType,
     },
     Grouping {
-        expression: Box<Expr<'a>>,
+        expression: Box<Expr>,
     },
     Unary {
-        operator: Token<'a>,
-        right: Box<Expr<'a>>,
+        operator: Token,
+        right: Box<Expr>,
     },
     Binary {
-        left: Box<Expr<'a>>,
-        operator: Token<'a>,
-        right: Box<Expr<'a>>,
+        left: Box<Expr>,
+        operator: Token,
+        right: Box<Expr>,
     },
 }
 
@@ -41,7 +41,7 @@ pub trait Visitor<R> {
     fn visit_unary_expr(&self, operator: &Token, right: &Expr) -> R;
 }
 
-impl<'a> Expr<'a> {
+impl Expr {
     /// Function to run in each expression. See the Visitor design pattern for more details.
     pub fn accept<R>(&self, visitor: &dyn Visitor<R>) -> R {
         match self {
@@ -76,7 +76,7 @@ impl AstPrinter {
 
 impl Visitor<String> for AstPrinter {
     fn visit_binary_expr(&self, left: &Expr, operator: &Token, right: &Expr) -> String {
-        self.parenthesize(operator.lexeme, vec![left, right])
+        self.parenthesize(&operator.lexeme(), vec![left, right])
     }
 
     fn visit_grouping_expr(&self, expr: &Expr) -> String {
@@ -84,7 +84,7 @@ impl Visitor<String> for AstPrinter {
     }
 
     fn visit_unary_expr(&self, operator: &Token, right: &Expr) -> String {
-        self.parenthesize(operator.lexeme, vec![right])
+        self.parenthesize(&operator.lexeme(), vec![right])
     }
 
     fn visit_literal_expr(&self, value: &LiteralType) -> String {
@@ -114,12 +114,18 @@ mod tests {
     fn test_printer() {
         let expression = Expr::Binary {
             left: Box::new(Expr::Unary {
-                operator: Token::new(TokenType::Minus, "-", 1),
+                operator: Token {
+                    token_type: TokenType::Minus,
+                    line: 1,
+                },
                 right: Box::new(Expr::Literal {
                     value: LiteralType::Number(123.0),
                 }),
             }),
-            operator: Token::new(TokenType::Star, "*", 1),
+            operator: Token {
+                token_type: TokenType::Star,
+                line: 1,
+            },
             right: Box::new(Expr::Grouping {
                 expression: Box::new(Expr::Literal {
                     value: LiteralType::Number(45.67),

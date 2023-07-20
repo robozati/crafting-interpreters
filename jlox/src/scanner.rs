@@ -12,10 +12,36 @@ enum ScannerError {
 /// functions in scan_tokens()
 pub struct Scanner<'a> {
     source: &'a str,
-    tokens: Vec<Token<'a>>,
+    tokens: Vec<Token>,
     start: usize,
     current: usize,
     line: usize,
+}
+
+/// Scans the source code and returns a vector with the tokens and a bool indicating if an error occurred.
+/// The scanner doesn't stop parsing the tokens if there was an error due to the book's implementation.
+pub fn scan_tokens(source: &str) -> (Vec<Token>, bool) {
+    let mut had_error = false;
+    let mut scanner = Scanner::new(source);
+    while !scanner.is_at_end() {
+        scanner.start = scanner.current;
+        if let Err(e) = scanner.scan_token() {
+            match e {
+                ScannerError::UnterminatedString(line) => {
+                    eprintln!("[line {}] Error: Unterminated string.", line);
+                }
+                ScannerError::UnexpectedCharacter(line) => {
+                    eprintln!("[line {}] Error: Unexpected character.", line);
+                }
+            }
+            had_error = true;
+        }
+    }
+    scanner.tokens.push(Token {
+        token_type: TokenType::Eof,
+        line: scanner.line,
+    });
+    (scanner.tokens, had_error)
 }
 
 // There's only one public function, scan_tokens(), the rest are helpers.
@@ -28,33 +54,6 @@ impl<'a> Scanner<'a> {
             current: 0,
             line: 1,
         }
-    }
-
-    /// Scans the source code and returns a vector with the tokens and a bool indicating if an
-    /// error occurred.
-    /// The scanner doesn't stop parsing the tokens if there was an error due to the book's
-    /// implementation.
-    pub fn scan_tokens(source: &'a str) -> (Vec<Token<'a>>, bool) {
-        let mut had_error = false;
-        let mut scanner = Self::new(source);
-        while !scanner.is_at_end() {
-            scanner.start = scanner.current;
-            if let Err(e) = scanner.scan_token() {
-                match e {
-                    ScannerError::UnterminatedString(line) => {
-                        eprintln!("[line {}] Error: Unterminated string.", line);
-                    }
-                    ScannerError::UnexpectedCharacter(line) => {
-                        eprintln!("[line {}] Error: Unexpected character.", line);
-                    }
-                }
-                had_error = true;
-            }
-        }
-        scanner
-            .tokens
-            .push(Token::new(TokenType::Eof, "", scanner.line));
-        (scanner.tokens, had_error)
     }
 
     fn scan_token(&mut self) -> Result<(), ScannerError> {
@@ -156,9 +155,10 @@ impl<'a> Scanner<'a> {
     }
 
     fn add_token(&mut self, token_type: TokenType) {
-        let text = &self.source[self.start..self.current];
-        let token = Token::new(token_type, text, self.line);
-        self.tokens.push(token);
+        self.tokens.push(Token {
+            token_type,
+            line: self.line,
+        });
     }
 
     fn string(&mut self) -> Result<(), ScannerError> {
@@ -175,12 +175,10 @@ impl<'a> Scanner<'a> {
         self.advance();
         // Trim the surrouding quotes
         let value = &self.source[self.start + 1..self.current - 1];
-        let token = Token::new(
-            TokenType::String(value.to_string()),
-            &self.source[self.start..self.current],
-            self.line,
-        );
-        self.tokens.push(token);
+        self.tokens.push(Token {
+            token_type: TokenType::String(value.to_string()),
+            line: self.line,
+        });
         Ok(())
     }
 
@@ -224,7 +222,7 @@ impl<'a> Scanner<'a> {
             "true" => TokenType::True,
             "var" => TokenType::Var,
             "while" => TokenType::While,
-            _ => TokenType::Identifier,
+            _ => TokenType::Identifier(text.to_string()),
         };
         self.add_token(token_type);
     }
