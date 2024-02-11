@@ -4,4 +4,5 @@ target_sources(${PROJECT_NAME}
         debug.c
         line.c
         value.c
+        vm.c
 )

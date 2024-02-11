@@ -9,7 +9,15 @@
 
 #define CLOX_CHUNK_MIN_CAPACITY 8
 
-enum OPCODE { OPCODE_constant, OPCODE_return };
+enum OPCODE {
+    OPCODE_constant,
+    OPCODE_add,
+    OPCODE_subtract,
+    OPCODE_multiply,
+    OPCODE_divide,
+    OPCODE_negate,
+    OPCODE_return
+};
 
 typedef struct {
     uint8_t* code;

@@ -7,6 +7,7 @@
 
 void debug_disassemble_chunk(Chunk const chunk, char const* const name);
 
-size_t debug_disassemble_instruction(Chunk const chunk, size_t const offset);
+size_t debug_disassemble_instruction(Chunk const* const pChunk,
+                                     size_t const offset);
 
 #endif // !CLOX_DEBUG_H
