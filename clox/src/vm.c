@@ -4,9 +4,12 @@
 #include <stdbool.h>
 #include <stdio.h>
 
-#include "chunk.h" // Chunk, OPCODE_*
-#include "debug.h" // debug_*
-#include "value.h" // Value, value_*
+#include "chunk.h"    // Chunk, OPCODE_*
+#include "compiler.h" // compiler_*
+#include "debug.h"    // debug_*
+#include "value.h"    // Value, value_*
+
+#define CLOX_DEBUG_TRACE_EXECUTION
 
 static void push(VirtualMachine* pVm, Value value) {
     assert(pVm != NULL);
@@ -22,7 +25,7 @@ static Value pop(VirtualMachine* pVm) {
     return *pVm->stack_top;
 }
 
-static InterpretResult run(VirtualMachine vm, bool const is_debug) {
+static InterpretResult run(VirtualMachine vm) {
 #define READ_BYTE() (*vm.ip++)
 #define READ_CONSTANT() (vm.chunk.constants.values[READ_BYTE()])
 #define BINARY_OP(op)                                                          \
@@ -33,16 +36,16 @@ static InterpretResult run(VirtualMachine vm, bool const is_debug) {
     } while (false)
 
     for (;;) {
-        if (is_debug) {
-            printf("          ");
-            for (Value* slot = vm.stack; slot < vm.stack_top; slot++) {
-                printf("[ ");
-                value_print(*slot);
-                printf(" ]");
-            }
-            printf("\n");
-            debug_disassemble_instruction(&vm.chunk, vm.ip - vm.chunk.code);
+#ifdef CLOX_DEBUG_TRACE_EXECUTION
+        printf("          ");
+        for (Value* slot = vm.stack; slot < vm.stack_top; slot++) {
+            printf("[ ");
+            value_print(*slot);
+            printf(" ]");
         }
+        printf("\n");
+        debug_disassemble_instruction(&vm.chunk, vm.ip - vm.chunk.code);
+#endif
         uint8_t instruction;
         switch (instruction = READ_BYTE()) {
         case OPCODE_constant: {
@@ -78,9 +81,14 @@ static InterpretResult run(VirtualMachine vm, bool const is_debug) {
 #undef BINARY_OP
 }
 
-InterpretResult vm_interpret(Chunk const chunk, bool const is_debug) {
+InterpretResult vm_interpret(char const* const source) {
+    compiler_compile(source);
+    return INTERPRET_OK;
+}
+
+/*InterpretResult vm_interpret(Chunk const chunk) {
     Value stack[STACK_MAX];
     VirtualMachine vm = {
         .chunk = chunk, .ip = chunk.code, .stack = stack, .stack_top = stack};
-    return run(vm, is_debug);
-}
+    return run(vm);
+}*/

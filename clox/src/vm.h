@@ -22,6 +22,6 @@ typedef enum {
     INTERPRET_RUNTIME_ERROR
 } InterpretResult;
 
-InterpretResult vm_interpret(Chunk const chunk, bool const is_debug);
+InterpretResult vm_interpret(char const* const source);
 
 #endif // !CLOX_VM_H

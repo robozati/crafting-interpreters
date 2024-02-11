@@ -1,8 +1,10 @@
 target_sources(${PROJECT_NAME}
     PRIVATE
+        compiler.c
         chunk.c 
         debug.c
         line.c
+        scanner.c
         value.c
         vm.c
 )
