@@ -6,10 +6,13 @@
 
 #include "chunk.h"    // Chunk, OPCODE_*
 #include "compiler.h" // compiler_*
-#include "debug.h"    // debug_*
 #include "value.h"    // Value, value_*
 
 #define CLOX_DEBUG_TRACE_EXECUTION
+
+#ifdef CLOX_DEBUG_TRACE_EXECUTION
+#include "debug.h" // debug_*
+#endif
 
 static void push(VirtualMachine* pVm, Value value) {
     assert(pVm != NULL);
@@ -82,13 +85,19 @@ static InterpretResult run(VirtualMachine vm) {
 }
 
 InterpretResult vm_interpret(char const* const source) {
-    compiler_compile(source);
-    return INTERPRET_OK;
-}
+    Chunk chunk = chunk_new_alloc();
 
-/*InterpretResult vm_interpret(Chunk const chunk) {
+    if (!compiler_compile(source, &chunk)) {
+        chunk_free(&chunk);
+        return INTERPRET_COMPILE_ERROR;
+    }
+
     Value stack[STACK_MAX];
     VirtualMachine vm = {
         .chunk = chunk, .ip = chunk.code, .stack = stack, .stack_top = stack};
-    return run(vm);
-}*/
+
+    InterpretResult result = run(vm);
+
+    chunk_free(&chunk);
+    return result;
+}

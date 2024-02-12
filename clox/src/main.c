@@ -23,7 +23,7 @@ static void repl(void) {
 static char* read_file(char const* const path) {
     FILE* file = fopen(path, "rb");
     if (file == NULL) {
-        fprintf(stderr, "Could not open file \"%s\".\n", path);
+        fprintf(stderr, "Could not open file \"%s\"\n", path);
         exit(74);
     }
 
@@ -65,30 +65,5 @@ int main(int argc, char* argv[]) {
         fprintf(stderr, "Usage: clox [path]\n");
         exit(64);
     }
-
-    Chunk chunk = chunk_new_alloc();
-
-    size_t constant = chunk_add_constant(&chunk, 1.2);
-    chunk_push(&chunk, OPCODE_constant, 123);
-    chunk_push(&chunk, constant, 123);
-
-    constant = chunk_add_constant(&chunk, 3.4);
-    chunk_push(&chunk, OPCODE_constant, 123);
-    chunk_push(&chunk, constant, 123);
-
-    chunk_push(&chunk, OPCODE_add, 123);
-
-    constant = chunk_add_constant(&chunk, 5.6);
-    chunk_push(&chunk, OPCODE_constant, 123);
-    chunk_push(&chunk, constant, 123);
-
-    chunk_push(&chunk, OPCODE_divide, 123);
-    chunk_push(&chunk, OPCODE_negate, 123);
-
-    chunk_push(&chunk, OPCODE_return, 123);
-
-    // vm_interpret(chunk);
-
-    chunk_free(&chunk);
     return 0;
 }
